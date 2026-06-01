@@ -77,6 +77,9 @@ const speedVal     = document.getElementById('speed-val');
 const delBtn       = document.getElementById('kf-delete-btn');
 const codeBox      = document.getElementById('code-box');
 const copyBtn      = document.getElementById('copy-btn');
+const telegramBox  = document.getElementById('telegram-box');
+const telegramBtn  = document.getElementById('telegram-btn');
+const slugEl       = document.getElementById('workflow-slug');
 const statusMsg    = document.getElementById('status-msg');
 const framesEl     = document.getElementById('frames-count');
 const fpsEl        = document.getElementById('fps-val');
@@ -320,26 +323,29 @@ document.addEventListener('touchend', e => {
 // ── Code output ───────────────────────────────────────────
 
 function updateCode() {
-  const fps = parseInt(fpsEl.value) || 16;
-  const res = resEl.value || '848x480';
+  const fps  = parseInt(fpsEl.value) || 16;
+  const res  = resEl.value || '848x480';
+  const slug = slugEl.value.trim() || 'camera-dictator';
   const code = encodeShot(totalFrames, fps, res, keyframes);
-  codeBox.value = `[${code}]`;
+
+  codeBox.value     = `[${code}]`;
+  telegramBox.value = `/wf /run:${slug} /fps:${fps} /length:${totalFrames} /size:${res} [${code}]`;
 }
 
-copyBtn.addEventListener('click', async () => {
-  const text = codeBox.value;
-  try {
-    await navigator.clipboard.writeText(text);
-    copyBtn.textContent = '✓ COPIED';
-    setStatus('ok', 'code copied — paste into negative prompt');
-    setTimeout(() => { copyBtn.textContent = 'COPY'; }, 2000);
-  } catch {
-    codeBox.select();
-    document.execCommand('copy');
-    copyBtn.textContent = '✓ COPIED';
-    setTimeout(() => { copyBtn.textContent = 'COPY'; }, 2000);
-  }
-});
+async function copyText(text, btn, label, statusMsg) {
+  try { await navigator.clipboard.writeText(text); }
+  catch { const ta = document.createElement('textarea'); ta.value = text;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+  btn.textContent = '✓ COPIED';
+  setStatus('ok', statusMsg);
+  setTimeout(() => { btn.textContent = label; }, 2000);
+}
+
+copyBtn.addEventListener('click', () =>
+  copyText(codeBox.value, copyBtn, 'COPY', 'camera code copied — paste into negative prompt'));
+
+telegramBtn.addEventListener('click', () =>
+  copyText(telegramBox.value, telegramBtn, 'TELEGRAM', 'telegram string copied — paste into @GraydientBot then add your prompt'));
 
 // ── Header inputs ─────────────────────────────────────────
 
@@ -352,7 +358,8 @@ framesEl.addEventListener('change', () => {
   renderTimeline();
 });
 
-[fpsEl, resEl].forEach(el => el.addEventListener('change', updateCode));
+[fpsEl, resEl, slugEl].forEach(el => el.addEventListener('change', updateCode));
+slugEl.addEventListener('input', updateCode);
 
 // ── Resize observer ───────────────────────────────────────
 

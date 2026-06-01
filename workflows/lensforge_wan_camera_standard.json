@@ -1,6 +1,6 @@
 {
-  "last_node_id": 9,
-  "last_link_id": 10,
+  "last_node_id": 10,
+  "last_link_id": 11,
   "nodes": [
     {
       "id": 1, "type": "WanVideoModelLoader", "title": "Wan Camera Model Loader",
@@ -34,25 +34,36 @@
       "widgets_values": ["umt5_xxl_fp8_e4m3fn_scaled.safetensors", true]
     },
     {
+      "id": 10, "type": "LoadImage", "title": "Load Input Image",
+      "pos": [380, 600], "size": {"0": 320, "1": 120}, "order": 4, "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "IMAGE", "type": "IMAGE", "links": [11], "slot_index": 0},
+        {"name": "MASK",  "type": "MASK",  "links": [],   "slot_index": 1}
+      ],
+      "widgets_values": ["input.png", "image"]
+    },
+    {
       "id": 5, "type": "WanFunControlCameraEmbed", "title": "Fun Camera Embed",
-      "pos": [780, 420], "size": {"0": 280, "1": 100}, "order": 4, "mode": 0,
+      "pos": [780, 420], "size": {"0": 280, "1": 120}, "order": 5, "mode": 0,
       "inputs": [
-        {"name": "model",        "type": "MODEL",        "link": 1, "slot_index": 0},
-        {"name": "camera_poses", "type": "CAMERA_POSES", "link": 5, "slot_index": 1}
+        {"name": "model",        "type": "MODEL",        "link": 1,  "slot_index": 0},
+        {"name": "camera_poses", "type": "CAMERA_POSES", "link": 5,  "slot_index": 1},
+        {"name": "image",        "type": "IMAGE",        "link": 11, "slot_index": 2}
       ],
       "outputs": [{"name": "WANVIDIMAGE_EMBEDS", "type": "WANVIDIMAGE_EMBEDS", "links": [6], "slot_index": 0}],
       "widgets_values": []
     },
     {
       "id": 6, "type": "EmptyWanLatentVideo", "title": "Empty Latent",
-      "pos": [780, 600], "size": {"0": 280, "1": 110}, "order": 5, "mode": 0,
+      "pos": [780, 640], "size": {"0": 280, "1": 110}, "order": 6, "mode": 0,
       "inputs": [],
       "outputs": [{"name": "LATENT", "type": "LATENT", "links": [7], "slot_index": 0}],
       "widgets_values": [848, 480, 81, 1]
     },
     {
       "id": 7, "type": "WanVideoSampler", "title": "Wan Video Sampler",
-      "pos": [1160, 200], "size": {"0": 300, "1": 220}, "order": 6, "mode": 0,
+      "pos": [1160, 200], "size": {"0": 300, "1": 220}, "order": 7, "mode": 0,
       "inputs": [
         {"name": "model",        "type": "MODEL",              "link": 2,  "slot_index": 0},
         {"name": "positive",     "type": "WANVIDEOTEXTEMBEDS", "link": 3,  "slot_index": 1},
@@ -65,30 +76,31 @@
     },
     {
       "id": 8, "type": "WanVideoVAEDecode", "title": "VAE Decode",
-      "pos": [1520, 200], "size": {"0": 280, "1": 130}, "order": 7, "mode": 0,
+      "pos": [1520, 200], "size": {"0": 280, "1": 130}, "order": 8, "mode": 0,
       "inputs": [{"name": "samples", "type": "LATENT", "link": 8, "slot_index": 0}],
       "outputs": [{"name": "IMAGE", "type": "IMAGE", "links": [9], "slot_index": 0}],
       "widgets_values": ["Wan2_1_VAE_fp32.safetensors", true, 272, 272]
     },
     {
       "id": 9, "type": "VHS_VideoCombine", "title": "Video Combine",
-      "pos": [1860, 200], "size": {"0": 300, "1": 180}, "order": 8, "mode": 0,
+      "pos": [1860, 200], "size": {"0": 300, "1": 180}, "order": 9, "mode": 0,
       "inputs": [{"name": "images", "type": "IMAGE", "link": 9, "slot_index": 0}],
       "outputs": [{"name": "Filepath", "type": "VHS_FILENAMES", "links": [], "slot_index": 0}],
       "widgets_values": [16, 0, "lensforge", "video/h264-mp4", "yuv420p", 19, true, false, true]
     }
   ],
   "links": [
-    [1,  1, 0, 5, 0, "MODEL"],
-    [2,  1, 0, 7, 0, "MODEL"],
-    [3,  2, 0, 7, 1, "WANVIDEOTEXTEMBEDS"],
-    [4,  4, 0, 7, 2, "WANVIDEOTEXTEMBEDS"],
-    [5,  3, 0, 5, 1, "CAMERA_POSES"],
-    [6,  5, 0, 7, 3, "WANVIDIMAGE_EMBEDS"],
-    [7,  6, 0, 7, 4, "LATENT"],
-    [8,  7, 0, 8, 0, "LATENT"],
-    [9,  8, 0, 9, 0, "IMAGE"],
-    [10, 3, 1, 4, 0, "STRING"]
+    [1,  1,  0, 5,  0, "MODEL"],
+    [2,  1,  0, 7,  0, "MODEL"],
+    [3,  2,  0, 7,  1, "WANVIDEOTEXTEMBEDS"],
+    [4,  4,  0, 7,  2, "WANVIDEOTEXTEMBEDS"],
+    [5,  3,  0, 5,  1, "CAMERA_POSES"],
+    [6,  5,  0, 7,  3, "WANVIDIMAGE_EMBEDS"],
+    [7,  6,  0, 7,  4, "LATENT"],
+    [8,  7,  0, 8,  0, "LATENT"],
+    [9,  8,  0, 9,  0, "IMAGE"],
+    [10, 3,  1, 4,  0, "STRING"],
+    [11, 10, 0, 5,  2, "IMAGE"]
   ],
   "groups": [], "config": {},
   "extra": {"ds": {"scale": 0.6, "offset": [0, 0]}, "frontendVersion": "1.43.18"},

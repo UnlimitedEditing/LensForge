@@ -41,6 +41,11 @@
         <option value="720x1280">720 × 1280</option>
       </select>
     </div>
+
+    <div class="header-field">
+      <label>SLUG</label>
+      <input id="workflow-slug" type="text" value="camera-dictator" style="width:130px" spellcheck="false" />
+    </div>
   </header>
 
   <!-- ── Main ─────────────────────────────────────────────── -->
@@ -86,8 +91,15 @@
         <button id="copy-btn">COPY</button>
       </div>
       <div class="code-hint">
-        example: <span class="code-example">blurry, low quality [LF1:29g0001412142a]</span>
-        — the node strips the token and routes it to the camera, your negatives pass through clean
+        paste into negative prompt — the node strips the token and routes it to the camera, your negatives pass through clean
+      </div>
+
+      <div class="code-row" style="margin-top:4px">
+        <input id="telegram-box" type="text" readonly spellcheck="false" class="telegram-box" />
+        <button id="telegram-btn">TELEGRAM</button>
+      </div>
+      <div class="code-hint">
+        send this to <span class="code-example">@GraydientBot</span> then add your prompt on the end
       </div>
     </div>
 

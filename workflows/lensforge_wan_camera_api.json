@@ -38,12 +38,21 @@
       "force_offload": true
     }
   },
+  "10": {
+    "class_type": "LoadImage",
+    "_meta": { "title": "Load Input Image" },
+    "inputs": {
+      "image": "input.png",
+      "upload": "image"
+    }
+  },
   "5": {
     "class_type": "WanFunControlCameraEmbed",
     "_meta": { "title": "Fun Camera Embed" },
     "inputs": {
       "model":        ["1", 0],
-      "camera_poses": ["3", 0]
+      "camera_poses": ["3", 0],
+      "image":        ["10", 0]
     }
   },
   "6": {
