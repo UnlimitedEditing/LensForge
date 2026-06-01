@@ -10,20 +10,34 @@ const _B36 = '0123456789abcdefghijklmnopqrstuvwxyz';
 const RESOLUTIONS = ['848x480','1280x720','640x480','480x848','720x1280'];
 const FPS_OPTIONS = [8, 12, 16, 24, 25, 30];
 const MOTION_TYPES = [
-  { id:'static',    label:'STATIC',    icon:'◼', color:'#4a4a4a' },
-  { id:'pan_left',  label:'PAN ←',     icon:'←', color:'#1a6b3c' },
-  { id:'pan_right', label:'PAN →',     icon:'→', color:'#1a6b3c' },
-  { id:'tilt_up',   label:'TILT ↑',    icon:'↑', color:'#1a3d6b' },
-  { id:'tilt_down', label:'TILT ↓',    icon:'↓', color:'#1a3d6b' },
-  { id:'zoom_in',   label:'ZOOM +',    icon:'⊕', color:'#6b3d1a' },
-  { id:'zoom_out',  label:'ZOOM −',    icon:'⊖', color:'#6b3d1a' },
-  { id:'dolly_fwd', label:'DOLLY FWD', icon:'▶', color:'#5a1a6b' },
-  { id:'dolly_bwd', label:'DOLLY BWD', icon:'◀', color:'#5a1a6b' },
-  { id:'crane_up',  label:'CRANE ↑',   icon:'⬆', color:'#1a5a5a' },
-  { id:'crane_down',label:'CRANE ↓',   icon:'⬇', color:'#1a5a5a' },
-  { id:'orbit_cw',  label:'ORBIT ↻',   icon:'↻', color:'#6b5a1a' },
-  { id:'orbit_ccw', label:'ORBIT ↺',   icon:'↺', color:'#6b5a1a' },
+  { id:'static',    label:'STATIC',    icon:'◼', color:'#4a4a4a', unit:'none'   },
+  { id:'pan_left',  label:'PAN ←',     icon:'←', color:'#1a6b3c', unit:'deg',  max:30  },
+  { id:'pan_right', label:'PAN →',     icon:'→', color:'#1a6b3c', unit:'deg',  max:30  },
+  { id:'tilt_up',   label:'TILT ↑',    icon:'↑', color:'#1a3d6b', unit:'deg',  max:20  },
+  { id:'tilt_down', label:'TILT ↓',    icon:'↓', color:'#1a3d6b', unit:'deg',  max:20  },
+  { id:'zoom_in',   label:'ZOOM +',    icon:'⊕', color:'#6b3d1a', unit:'pct'          },
+  { id:'zoom_out',  label:'ZOOM −',    icon:'⊖', color:'#6b3d1a', unit:'pct'          },
+  { id:'dolly_fwd', label:'DOLLY FWD', icon:'▶', color:'#5a1a6b', unit:'pct'          },
+  { id:'dolly_bwd', label:'DOLLY BWD', icon:'◀', color:'#5a1a6b', unit:'pct'          },
+  { id:'crane_up',  label:'CRANE ↑',   icon:'⬆', color:'#1a5a5a', unit:'pct'          },
+  { id:'crane_down',label:'CRANE ↓',   icon:'⬇', color:'#1a5a5a', unit:'pct'          },
+  { id:'orbit_cw',  label:'ORBIT ↻',   icon:'↻', color:'#6b5a1a', unit:'deg',  max:60  },
+  { id:'orbit_ccw', label:'ORBIT ↺',   icon:'↺', color:'#6b5a1a', unit:'deg',  max:60  },
 ];
+
+function formatSpeed(motionId, speed) {
+  const def = motionDef(motionId);
+  if (def.unit === 'none') return '—';
+  if (def.unit === 'deg')  return `${Math.round(speed * def.max)}°`;
+  return `${Math.round(speed * 100)}%`;
+}
+
+function speedLabel(motionId) {
+  const def = motionDef(motionId);
+  if (def.unit === 'none') return null;
+  if (def.unit === 'deg')  return `max ${def.max}° travel`;
+  return 'intensity';
+}
 
 function enc(n, w) {
   let s = '';
@@ -145,8 +159,16 @@ function renderInspector() {
   inspectorEl.classList.add('visible');
   motionGrid.querySelectorAll('.motion-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.motion === kf.motion));
-  speedRange.value = kf.speed;
-  speedVal.textContent = kf.speed.toFixed(2);
+
+  const isStatic = kf.motion === 'static';
+  speedRange.value        = kf.speed;
+  speedVal.textContent    = formatSpeed(kf.motion, kf.speed);
+  speedRange.disabled     = isStatic;
+  speedRange.style.opacity = isStatic ? '0.25' : '1';
+
+  // Update the speed row label to show units
+  const lbl = document.getElementById('speed-unit-label');
+  if (lbl) lbl.textContent = speedLabel(kf.motion) || '';
 }
 
 // ── Motion grid ───────────────────────────────────────────
@@ -170,7 +192,7 @@ speedRange.addEventListener('input', () => {
   const kf = keyframes.find(k => k.id === selectedId);
   if (!kf) return;
   kf.speed = parseFloat(speedRange.value);
-  speedVal.textContent = kf.speed.toFixed(2);
+  speedVal.textContent = formatSpeed(kf.motion, kf.speed);
   updateCode();
 });
 
@@ -269,6 +291,31 @@ document.addEventListener('mouseup', e => {
 });
 
 trackEl.addEventListener('mouseleave', () => { if (!dragState) ghostEl.style.display = 'none'; });
+
+// ── Touch support (mirrors mouse handlers) ────────────────
+
+function clientXY(e) {
+  return e.touches?.[0] ?? e.changedTouches?.[0] ?? e;
+}
+
+trackEl.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const touch = clientXY(e);
+  trackEl.dispatchEvent(new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY, bubbles: true }));
+}, { passive: false });
+
+document.addEventListener('touchmove', e => {
+  if (!dragState) return;
+  e.preventDefault();
+  const touch = clientXY(e);
+  document.dispatchEvent(new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY, bubbles: true }));
+}, { passive: false });
+
+document.addEventListener('touchend', e => {
+  if (!dragState) return;
+  const touch = clientXY(e);
+  document.dispatchEvent(new MouseEvent('mouseup', { clientX: touch.clientX, clientY: touch.clientY, bubbles: true }));
+});
 
 // ── Code output ───────────────────────────────────────────
 
