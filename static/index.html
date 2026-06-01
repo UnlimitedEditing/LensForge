@@ -4,21 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LENSFORGE</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div id="app">
 
-  <!-- ── Header ─────────────────────────────────────────── -->
+  <!-- ── Header ───────────────────────────────────────────── -->
   <header id="header">
     <div id="logo" data-text="LENSFORGE">LENS<span>FORGE</span></div>
-    <div class="header-sep">//</div>
-
-    <div class="header-field">
-      <label>SHOT</label>
-      <input id="shot-name" type="text" value="shot_01" style="width:90px" />
-    </div>
-
     <div class="header-sep">//</div>
 
     <div class="header-field">
@@ -28,7 +21,14 @@
 
     <div class="header-field">
       <label>FPS</label>
-      <input id="fps-val" type="number" value="16" min="8" max="30" step="1" style="width:50px" />
+      <select id="fps-val" style="width:60px">
+        <option value="8">8</option>
+        <option value="12">12</option>
+        <option value="16" selected>16</option>
+        <option value="24">24</option>
+        <option value="25">25</option>
+        <option value="30">30</option>
+      </select>
     </div>
 
     <div class="header-field">
@@ -37,57 +37,24 @@
         <option value="848x480">848 × 480</option>
         <option value="1280x720">1280 × 720</option>
         <option value="640x480">640 × 480</option>
-        <option value="480x848">480 × 848 (portrait)</option>
-        <option value="720x1280">720 × 1280 (portrait)</option>
+        <option value="480x848">480 × 848</option>
+        <option value="720x1280">720 × 1280</option>
       </select>
     </div>
-
-    <div class="header-field">
-      <label>SEED</label>
-      <input id="seed-val" type="number" value="-1" style="width:80px" title="-1 = random" />
-    </div>
-
-    <div class="header-spacer"></div>
-
-    <button id="btn-render" title="Submit scene to Graydient">
-      ▶ RENDER
-    </button>
   </header>
 
-  <!-- ── Main ───────────────────────────────────────────── -->
+  <!-- ── Main ─────────────────────────────────────────────── -->
   <main id="main">
-
-    <!-- Prompts -->
-    <div id="prompt-area">
-      <div class="field-row">
-        <span class="field-label">POSITIVE</span>
-        <textarea id="prompt-positive" class="crt-input"
-          placeholder="describe the scene…"></textarea>
-      </div>
-      <div class="field-row">
-        <span class="field-label">NEGATIVE</span>
-        <textarea id="prompt-negative" class="crt-input"
-          placeholder="blurry, low quality…" style="min-height:32px;max-height:48px"></textarea>
-      </div>
-    </div>
 
     <!-- Timeline -->
     <div id="timeline-panel">
       <div class="panel-title">// CAMERA TIMELINE</div>
-
-      <!-- Frame ruler -->
-      <div id="frame-ruler">
-        <canvas id="ruler-canvas"></canvas>
-      </div>
-
-      <!-- Track -->
+      <div id="frame-ruler"><canvas id="ruler-canvas"></canvas></div>
       <div id="timeline-track">
         <div id="timeline-ghost"></div>
-        <!-- .kf-segment elements injected here -->
       </div>
-
-      <div style="font-size:10px;color:var(--text-dim);margin-top:2px">
-        Drag empty space to add a segment — drag segment to move — drag edges to resize — click to select
+      <div class="timeline-hint">
+        drag empty space to add · drag edges to resize · click to select
       </div>
     </div>
 
@@ -95,91 +62,43 @@
     <div id="inspector">
       <div id="inspector-empty">select a segment to edit</div>
       <div id="inspector-content">
-
         <div class="inspector-row">
           <span class="inspector-label">MOTION</span>
           <div id="motion-grid"></div>
           <button id="kf-delete-btn" class="inspector-del-btn">✕ DELETE</button>
         </div>
-
         <div class="inspector-row">
           <span class="inspector-label">SPEED</span>
           <div class="speed-row">
-            <input id="speed-range" type="range" class="crt-range"
-              min="0" max="1" step="0.01" value="0.5" />
+            <input id="speed-range" type="range" class="crt-range" min="0" max="1" step="0.01" value="0.5" />
             <span id="speed-val" class="speed-val">0.50</span>
           </div>
         </div>
+      </div>
+    </div>
 
+    <!-- Code output -->
+    <div id="code-panel">
+      <div class="panel-title">// CAMERA CODE — paste into negative prompt</div>
+      <div class="code-row">
+        <input id="code-box" type="text" readonly spellcheck="false" />
+        <button id="copy-btn">COPY</button>
+      </div>
+      <div class="code-hint">
+        example: <span class="code-example">blurry, low quality [LF1:29g0001412142a]</span>
+        — the node strips the token and routes it to the camera, your negatives pass through clean
       </div>
     </div>
 
   </main>
 
-  <!-- ── Sidebar ────────────────────────────────────────── -->
-  <aside id="sidebar">
-    <div class="sidebar-tab-bar">
-      <div class="sidebar-tab active" data-pane="scene-pane">SCENE</div>
-      <div class="sidebar-tab" data-pane="results-pane">RESULTS</div>
-      <div class="sidebar-tab" data-pane="config-pane">CONFIG</div>
-    </div>
-
-    <!-- Scene doc preview -->
-    <div id="scene-pane" class="sidebar-pane active">
-      <div style="font-size:10px;color:var(--text-dim)">scene document (live)</div>
-      <pre id="scene-doc-pre"></pre>
-    </div>
-
-    <!-- Render results -->
-    <div id="results-pane" class="sidebar-pane">
-      <div style="font-size:10px;color:var(--text-dim)">render results</div>
-      <div id="results-list"></div>
-    </div>
-
-    <!-- Config -->
-    <div id="config-pane" class="sidebar-pane">
-      <div class="config-field">
-        <label>Graydient API Key</label>
-        <input id="cfg-api-key" type="password" placeholder="grd_…" />
-      </div>
-      <div class="config-field">
-        <label>Workflow Slug</label>
-        <input id="cfg-slug" type="text" placeholder="lensforge-wan-cam-1234-5" />
-      </div>
-      <div class="config-field" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <div>
-          <label style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">JSON field</label>
-          <input id="cfg-field-json"  type="text" value="lensforge_json"   style="width:100%" />
-        </div>
-        <div>
-          <label style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Prompt field</label>
-          <input id="cfg-field-pos"   type="text" value="positive_prompt"  style="width:100%" />
-        </div>
-        <div>
-          <label style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Neg field</label>
-          <input id="cfg-field-neg"   type="text" value="negative_prompt"  style="width:100%" />
-        </div>
-        <div>
-          <label style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Seed field</label>
-          <input id="cfg-field-seed"  type="text" value="seed"             style="width:100%" />
-        </div>
-      </div>
-      <button id="cfg-save-btn" class="btn-save">SAVE</button>
-      <div style="font-size:10px;color:var(--text-dim);margin-top:4px;line-height:1.6">
-        Field names must match your Graydient workflow's Fields tab config.
-      </div>
-    </div>
-
-  </aside>
-
-  <!-- ── Status bar ─────────────────────────────────────── -->
+  <!-- ── Status bar ───────────────────────────────────────── -->
   <footer id="statusbar">
     <div class="status-dot"></div>
     <div id="status-msg" data-state=""></div>
   </footer>
 
 </div>
-
-<script type="module" src="/static/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

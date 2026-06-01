@@ -64,11 +64,11 @@ body::after {
 #app {
   display: grid;
   grid-template-rows: 44px 1fr 36px;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr;
   grid-template-areas:
-    "header  header"
-    "main    sidebar"
-    "status  status";
+    "header"
+    "main"
+    "status";
   height: 100vh;
   gap: 0;
 }
@@ -161,48 +161,71 @@ body::after {
   gap: 14px;
 }
 
-/* ── Prompt area ────────────────────────────────────────── */
-#prompt-area {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.field-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.field-label {
+.timeline-hint {
   font-size: 10px;
   color: var(--text-dim);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  min-width: 72px;
-  padding-top: 5px;
+  margin-top: 2px;
 }
 
-textarea.crt-input {
+/* ── Code output ─────────────────────────────────────────── */
+#code-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.code-row {
+  display: flex;
+  gap: 8px;
+}
+
+#code-box {
   flex: 1;
   background: var(--bg-inset);
-  border: 1px solid var(--border);
-  color: var(--text);
+  border: 1px solid var(--green-dim);
+  color: var(--green);
   font-family: var(--font);
-  font-size: 11px;
-  padding: 6px 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  padding: 8px 10px;
   border-radius: var(--radius);
-  resize: vertical;
   outline: none;
-  min-height: 44px;
-  max-height: 80px;
-  line-height: 1.5;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  text-shadow: 0 0 8px var(--green);
+  box-shadow: inset 0 0 12px var(--green-faint);
+  cursor: text;
+  user-select: all;
 }
 
-textarea.crt-input:focus {
-  border-color: var(--green-dim);
-  box-shadow: 0 0 6px var(--green-glow);
+#copy-btn {
+  background: transparent;
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 6px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-shadow: 0 0 8px var(--green);
+  transition: background 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+#copy-btn:hover {
+  background: var(--green-faint);
+  box-shadow: 0 0 12px var(--green-glow);
+}
+
+.code-hint {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.code-example {
+  color: var(--green-dim);
+  font-style: normal;
 }
 
 /* ── Timeline panel ─────────────────────────────────────── */
