@@ -145,7 +145,7 @@ _MAX_PAN   = math.radians(30)
 _MAX_TILT  = math.radians(20)
 _MAX_DOLLY = 0.8
 _MAX_CRANE = 0.4
-_MAX_ORBIT = math.pi / 3
+_MAX_ORBIT = math.pi * 2
 
 def _I():  return [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
 def _Ry(a):

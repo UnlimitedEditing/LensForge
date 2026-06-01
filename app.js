@@ -21,8 +21,8 @@ const MOTION_TYPES = [
   { id:'dolly_bwd', label:'DOLLY BWD', icon:'◀', color:'#5a1a6b', unit:'pct'          },
   { id:'crane_up',  label:'CRANE ↑',   icon:'⬆', color:'#1a5a5a', unit:'pct'          },
   { id:'crane_down',label:'CRANE ↓',   icon:'⬇', color:'#1a5a5a', unit:'pct'          },
-  { id:'orbit_cw',  label:'ORBIT ↻',   icon:'↻', color:'#6b5a1a', unit:'deg',  max:60  },
-  { id:'orbit_ccw', label:'ORBIT ↺',   icon:'↺', color:'#6b5a1a', unit:'deg',  max:60  },
+  { id:'orbit_cw',  label:'ORBIT ↻',   icon:'↻', color:'#6b5a1a', unit:'deg',  max:360 },
+  { id:'orbit_ccw', label:'ORBIT ↺',   icon:'↺', color:'#6b5a1a', unit:'deg',  max:360 },
 ];
 
 function formatSpeed(motionId, speed) {
