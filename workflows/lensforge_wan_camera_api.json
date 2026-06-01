@@ -3,94 +3,113 @@
     "class_type": "WanVideoModelLoader",
     "_meta": { "title": "Wan Camera Model Loader" },
     "inputs": {
-      "model_name_high": "Wan2_2-Fun-Camera-HIGH_fp8.safetensors",
-      "model_name_low":  "Wan2_2-Fun-Camera-LOW_fp8.safetensors",
-      "precision":       "fp8_e4m3fn",
-      "attention_mode":  "sdpa",
-      "load_device":     "main_device"
+      "model":          "Wan2_2-Fun-Camera-HIGH_fp8.safetensors",
+      "base_precision": "bf16",
+      "quantization":   "disabled",
+      "load_device":    "offload_device"
     }
   },
   "2": {
-    "class_type": "WanVideoTextEncode",
-    "_meta": { "title": "Text Encode — Positive" },
+    "class_type": "LoadWanVideoT5TextEncoder",
+    "_meta": { "title": "T5 Text Encoder Loader" },
     "inputs": {
-      "clip_name":     "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
-      "text":          "a cinematic scene",
-      "force_offload": true
+      "model_name": "umt5_xxl_fp16.safetensors",
+      "precision":  "bf16"
     }
   },
   "3": {
+    "class_type": "WanVideoVAELoader",
+    "_meta": { "title": "VAE Loader" },
+    "inputs": {
+      "model_name": "Wan2_1_VAE_fp32.safetensors",
+      "precision":  "bf16"
+    }
+  },
+  "4": {
     "class_type": "LensForgeCameraNode",
     "_meta": { "title": "LensForge Camera" },
     "inputs": {
-      "negative_prompt": "blurry, low quality [LF1:29g0001412142a14512a]",
-      "num_frames":      81,
+      "positive_prompt": "[LF1:15200015cz] a cinematic scene",
+      "num_frames":      25,
+      "fps":             16,
       "width":           848,
       "height":          480
     }
   },
-  "4": {
+  "5": {
     "class_type": "WanVideoTextEncode",
-    "_meta": { "title": "Text Encode — Negative" },
+    "_meta": { "title": "Text Encode" },
     "inputs": {
-      "clip_name":     "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
-      "text":          ["3", 1],
-      "force_offload": true
+      "positive_prompt": ["4", 1],
+      "negative_prompt": "blurry, low quality, watermark",
+      "t5":              ["2", 0],
+      "force_offload":   true
+    }
+  },
+  "6": {
+    "class_type": "WanVideoFunCameraEmbeds",
+    "_meta": { "title": "Fun Camera Embeds" },
+    "inputs": {
+      "poses":         ["4", 0],
+      "width":         ["4", 5],
+      "height":        ["4", 6],
+      "strength":      1.0,
+      "start_percent": 0.0,
+      "end_percent":   1.0
     }
   },
   "10": {
     "class_type": "LoadImage",
     "_meta": { "title": "Load Input Image" },
     "inputs": {
-      "image": "input.png",
+      "image":  "input.png",
       "upload": "image"
     }
   },
-  "5": {
-    "class_type": "WanFunControlCameraEmbed",
-    "_meta": { "title": "Fun Camera Embed" },
+  "11": {
+    "class_type": "WanVideoImageToVideoEncode",
+    "_meta": { "title": "Image To Video Encode" },
     "inputs": {
-      "model":        ["1", 0],
-      "camera_poses": ["3", 0],
-      "image":        ["10", 0]
-    }
-  },
-  "6": {
-    "class_type": "EmptyWanLatentVideo",
-    "_meta": { "title": "Empty Latent" },
-    "inputs": {
-      "width":      848,
-      "height":     480,
-      "length":     81,
-      "batch_size": 1
+      "width":                 ["4", 5],
+      "height":                ["4", 6],
+      "num_frames":            ["4", 2],
+      "noise_aug_strength":    0.0,
+      "start_latent_strength": 1.0,
+      "end_latent_strength":   1.0,
+      "force_offload":         true,
+      "vae":                   ["3", 0],
+      "start_image":           ["10", 0],
+      "control_embeds":        ["6", 0],
+      "fun_or_fl2v_model":     true
     }
   },
   "7": {
     "class_type": "WanVideoSampler",
     "_meta": { "title": "Wan Video Sampler" },
     "inputs": {
-      "model":         ["1", 0],
-      "positive":      ["2", 0],
-      "negative":      ["4", 0],
-      "image_embeds":  ["5", 0],
-      "latent_image":  ["6", 0],
-      "steps":         30,
-      "cfg":           6.0,
-      "seed":          42,
-      "sampler_name":  "dpmpp_2m",
-      "scheduler":     "karras",
-      "force_offload": true
+      "model":             ["1", 0],
+      "image_embeds":      ["11", 0],
+      "text_embeds":       ["5", 0],
+      "steps":             10,
+      "cfg":               6.0,
+      "shift":             5.0,
+      "seed":              42,
+      "scheduler":         "unipc",
+      "riflex_freq_index": 0,
+      "force_offload":     true
     }
   },
   "8": {
-    "class_type": "WanVideoVAEDecode",
-    "_meta": { "title": "VAE Decode" },
+    "class_type": "WanVideoDecode",
+    "_meta": { "title": "Wan Video Decode" },
     "inputs": {
-      "vae_name":               "Wan2_1_VAE_fp32.safetensors",
-      "samples":                ["7", 0],
-      "enable_vae_tiling":      true,
-      "tile_sample_min_height": 272,
-      "tile_sample_min_width":  272
+      "vae":               ["3", 0],
+      "samples":           ["7", 0],
+      "enable_vae_tiling": true,
+      "tile_x":            272,
+      "tile_y":            272,
+      "tile_stride_x":     144,
+      "tile_stride_y":     128
     }
   },
   "9": {
@@ -98,7 +117,7 @@
     "_meta": { "title": "Video Combine" },
     "inputs": {
       "images":          ["8", 0],
-      "frame_rate":      16,
+      "frame_rate":      ["4", 3],
       "loop_count":      0,
       "filename_prefix": "lensforge",
       "format":          "video/h264-mp4",

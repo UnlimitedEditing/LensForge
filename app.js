@@ -48,7 +48,21 @@ function enc(n, w) {
 function encodeShot(frames, fps, resolution, keyframes) {
   const fpsIdx = FPS_OPTIONS.indexOf(fps);
   const resIdx = RESOLUTIONS.indexOf(resolution);
-  let code = 'LF1:' + enc(frames, 2) + enc(fpsIdx < 0 ? 2 : fpsIdx, 1) + enc(resIdx < 0 ? 0 : resIdx, 1);
+
+  // Resolution encoding:
+  //   preset   → 1 char (index 0–4)
+  //   custom   → 'f' + 3 chars width + 3 chars height  (max 46655 per axis)
+  let resCode;
+  if (resIdx >= 0) {
+    resCode = enc(resIdx, 1);
+  } else {
+    const parts = resolution.split('x');
+    const w = parseInt(parts[0]) || 848;
+    const h = parseInt(parts[1]) || 480;
+    resCode = 'f' + enc(w, 3) + enc(h, 3);
+  }
+
+  let code = 'LF1:' + enc(frames, 2) + enc(fpsIdx < 0 ? 2 : fpsIdx, 1) + resCode;
   for (const kf of keyframes) {
     const mIdx = MOTION_TYPES.findIndex(m => m.id === kf.motion);
     const sEnc = Math.round(kf.speed * 35);

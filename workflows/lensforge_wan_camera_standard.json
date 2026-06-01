@@ -1,108 +1,141 @@
 {
-  "last_node_id": 10,
-  "last_link_id": 11,
+  "last_node_id": 11,
+  "last_link_id": 16,
   "nodes": [
     {
       "id": 1, "type": "WanVideoModelLoader", "title": "Wan Camera Model Loader",
-      "pos": [0, 300], "size": {"0": 300, "1": 150}, "order": 0, "mode": 0,
+      "pos": [0, 300], "size": {"0": 300, "1": 130}, "order": 0, "mode": 0,
       "inputs": [],
-      "outputs": [{"name": "MODEL", "type": "MODEL", "links": [1, 2], "slot_index": 0}],
-      "widgets_values": ["Wan2_2-Fun-Camera-HIGH_fp8.safetensors", "Wan2_2-Fun-Camera-LOW_fp8.safetensors", "fp8_e4m3fn", "sdpa", "main_device"]
+      "outputs": [{"name": "model", "type": "WANVIDEOMODEL", "links": [1], "slot_index": 0}],
+      "widgets_values": ["Wan2_2-Fun-Camera-HIGH_fp8.safetensors", "bf16", "disabled", "offload_device"]
     },
     {
-      "id": 2, "type": "WanVideoTextEncode", "title": "Text Encode — Positive",
-      "pos": [380, 0], "size": {"0": 320, "1": 120}, "order": 1, "mode": 0,
+      "id": 2, "type": "LoadWanVideoT5TextEncoder", "title": "T5 Text Encoder Loader",
+      "pos": [0, 0], "size": {"0": 300, "1": 100}, "order": 1, "mode": 0,
       "inputs": [],
-      "outputs": [{"name": "WANVIDEOTEXTEMBEDS", "type": "WANVIDEOTEXTEMBEDS", "links": [3], "slot_index": 0}],
-      "widgets_values": ["umt5_xxl_fp8_e4m3fn_scaled.safetensors", "a cinematic scene", true]
+      "outputs": [{"name": "wan_t5_model", "type": "WANTEXTENCODER", "links": [2], "slot_index": 0}],
+      "widgets_values": ["umt5_xxl_fp16.safetensors", "bf16"]
     },
     {
-      "id": 3, "type": "LensForgeCameraNode", "title": "LensForge Camera",
-      "pos": [380, 200], "size": {"0": 320, "1": 130}, "order": 2, "mode": 0,
+      "id": 3, "type": "WanVideoVAELoader", "title": "VAE Loader",
+      "pos": [0, 160], "size": {"0": 300, "1": 80}, "order": 2, "mode": 0,
+      "inputs": [],
+      "outputs": [{"name": "vae", "type": "WANVAE", "links": [3, 4], "slot_index": 0}],
+      "widgets_values": ["Wan2_1_VAE_fp32.safetensors", "bf16"]
+    },
+    {
+      "id": 4, "type": "LensForgeCameraNode", "title": "LensForge Camera",
+      "pos": [380, 300], "size": {"0": 320, "1": 150}, "order": 3, "mode": 0,
       "inputs": [],
       "outputs": [
-        {"name": "camera_poses",  "type": "CAMERA_POSES", "links": [5],  "slot_index": 0},
-        {"name": "negative_text", "type": "STRING",       "links": [10], "slot_index": 1}
+        {"name": "camera_poses",  "type": "CAMERACTRL_POSES", "links": [5],  "slot_index": 0},
+        {"name": "positive_text", "type": "STRING",           "links": [6],  "slot_index": 1},
+        {"name": "num_frames",    "type": "INT",               "links": [13], "slot_index": 2},
+        {"name": "fps",           "type": "INT",               "links": [16], "slot_index": 3},
+        {"name": "width",         "type": "INT",               "links": [14], "slot_index": 4},
+        {"name": "height",        "type": "INT",               "links": [15], "slot_index": 5}
       ],
-      "widgets_values": ["blurry, low quality [LF1:29g0001412142a14512a]", 81, 848, 480]
+      "widgets_values": ["[LF1:15200015cz] a cinematic scene", 25, 16, 848, 480]
     },
     {
-      "id": 4, "type": "WanVideoTextEncode", "title": "Text Encode — Negative",
-      "pos": [780, 200], "size": {"0": 320, "1": 120}, "order": 3, "mode": 0,
-      "inputs": [{"name": "text", "type": "STRING", "link": 10, "slot_index": 0}],
-      "outputs": [{"name": "WANVIDEOTEXTEMBEDS", "type": "WANVIDEOTEXTEMBEDS", "links": [4], "slot_index": 0}],
-      "widgets_values": ["umt5_xxl_fp8_e4m3fn_scaled.safetensors", true]
+      "id": 5, "type": "WanVideoTextEncode", "title": "Text Encode",
+      "pos": [780, 0], "size": {"0": 340, "1": 140}, "order": 4, "mode": 0,
+      "inputs": [
+        {"name": "positive_prompt", "type": "STRING",         "link": 6, "slot_index": 0},
+        {"name": "t5",              "type": "WANTEXTENCODER", "link": 2, "slot_index": 1}
+      ],
+      "outputs": [{"name": "text_embeds", "type": "WANVIDEOTEXTEMBEDS", "links": [7], "slot_index": 0}],
+      "widgets_values": ["", "blurry, low quality, watermark", true]
+    },
+    {
+      "id": 6, "type": "WanVideoFunCameraEmbeds", "title": "Fun Camera Embeds",
+      "pos": [780, 300], "size": {"0": 280, "1": 160}, "order": 5, "mode": 0,
+      "inputs": [
+        {"name": "poses",  "type": "CAMERACTRL_POSES", "link": 5,  "slot_index": 0},
+        {"name": "width",  "type": "INT",               "link": 14, "slot_index": 1},
+        {"name": "height", "type": "INT",               "link": 15, "slot_index": 2}
+      ],
+      "outputs": [{"name": "image_embeds", "type": "WANVIDIMAGE_EMBEDS", "links": [8], "slot_index": 0}],
+      "widgets_values": [1.0, 0.0, 1.0]
     },
     {
       "id": 10, "type": "LoadImage", "title": "Load Input Image",
-      "pos": [380, 600], "size": {"0": 320, "1": 120}, "order": 4, "mode": 0,
+      "pos": [380, 580], "size": {"0": 320, "1": 120}, "order": 6, "mode": 0,
       "inputs": [],
       "outputs": [
-        {"name": "IMAGE", "type": "IMAGE", "links": [11], "slot_index": 0},
-        {"name": "MASK",  "type": "MASK",  "links": [],   "slot_index": 1}
+        {"name": "IMAGE", "type": "IMAGE", "links": [9], "slot_index": 0},
+        {"name": "MASK",  "type": "MASK",  "links": [], "slot_index": 1}
       ],
       "widgets_values": ["input.png", "image"]
     },
     {
-      "id": 5, "type": "WanFunControlCameraEmbed", "title": "Fun Camera Embed",
-      "pos": [780, 420], "size": {"0": 280, "1": 120}, "order": 5, "mode": 0,
+      "id": 11, "type": "WanVideoImageToVideoEncode", "title": "Image To Video Encode",
+      "pos": [780, 500], "size": {"0": 320, "1": 200}, "order": 7, "mode": 0,
       "inputs": [
-        {"name": "model",        "type": "MODEL",        "link": 1,  "slot_index": 0},
-        {"name": "camera_poses", "type": "CAMERA_POSES", "link": 5,  "slot_index": 1},
-        {"name": "image",        "type": "IMAGE",        "link": 11, "slot_index": 2}
+        {"name": "vae",            "type": "WANVAE",             "link": 3,  "slot_index": 0},
+        {"name": "start_image",    "type": "IMAGE",              "link": 9,  "slot_index": 1},
+        {"name": "control_embeds", "type": "WANVIDIMAGE_EMBEDS", "link": 8,  "slot_index": 2},
+        {"name": "width",          "type": "INT",                "link": 14, "slot_index": 3},
+        {"name": "height",         "type": "INT",                "link": 15, "slot_index": 4},
+        {"name": "num_frames",     "type": "INT",                "link": 13, "slot_index": 5}
       ],
-      "outputs": [{"name": "WANVIDIMAGE_EMBEDS", "type": "WANVIDIMAGE_EMBEDS", "links": [6], "slot_index": 0}],
-      "widgets_values": []
-    },
-    {
-      "id": 6, "type": "EmptyWanLatentVideo", "title": "Empty Latent",
-      "pos": [780, 640], "size": {"0": 280, "1": 110}, "order": 6, "mode": 0,
-      "inputs": [],
-      "outputs": [{"name": "LATENT", "type": "LATENT", "links": [7], "slot_index": 0}],
-      "widgets_values": [848, 480, 81, 1]
+      "outputs": [{"name": "image_embeds", "type": "WANVIDIMAGE_EMBEDS", "links": [10], "slot_index": 0}],
+      "widgets_values": [0.0, 1.0, 1.0, true, true]
     },
     {
       "id": 7, "type": "WanVideoSampler", "title": "Wan Video Sampler",
-      "pos": [1160, 200], "size": {"0": 300, "1": 220}, "order": 7, "mode": 0,
+      "pos": [1160, 200], "size": {"0": 300, "1": 240}, "order": 8, "mode": 0,
       "inputs": [
-        {"name": "model",        "type": "MODEL",              "link": 2,  "slot_index": 0},
-        {"name": "positive",     "type": "WANVIDEOTEXTEMBEDS", "link": 3,  "slot_index": 1},
-        {"name": "negative",     "type": "WANVIDEOTEXTEMBEDS", "link": 4,  "slot_index": 2},
-        {"name": "image_embeds", "type": "WANVIDIMAGE_EMBEDS", "link": 6,  "slot_index": 3},
-        {"name": "latent_image", "type": "LATENT",             "link": 7,  "slot_index": 4}
+        {"name": "model",        "type": "WANVIDEOMODEL",      "link": 1,  "slot_index": 0},
+        {"name": "image_embeds", "type": "WANVIDIMAGE_EMBEDS", "link": 10, "slot_index": 1},
+        {"name": "text_embeds",  "type": "WANVIDEOTEXTEMBEDS", "link": 7,  "slot_index": 2}
       ],
-      "outputs": [{"name": "LATENT", "type": "LATENT", "links": [8], "slot_index": 0}],
-      "widgets_values": [30, 6.0, 42, "dpmpp_2m", "karras", true]
+      "outputs": [
+        {"name": "samples",          "type": "LATENT", "links": [11], "slot_index": 0},
+        {"name": "denoised_samples", "type": "LATENT", "links": [],   "slot_index": 1}
+      ],
+      "widgets_values": [10, 6.0, 5.0, 42, true, "unipc", 0]
     },
     {
-      "id": 8, "type": "WanVideoVAEDecode", "title": "VAE Decode",
-      "pos": [1520, 200], "size": {"0": 280, "1": 130}, "order": 8, "mode": 0,
-      "inputs": [{"name": "samples", "type": "LATENT", "link": 8, "slot_index": 0}],
-      "outputs": [{"name": "IMAGE", "type": "IMAGE", "links": [9], "slot_index": 0}],
-      "widgets_values": ["Wan2_1_VAE_fp32.safetensors", true, 272, 272]
+      "id": 8, "type": "WanVideoDecode", "title": "Wan Video Decode",
+      "pos": [1520, 200], "size": {"0": 300, "1": 160}, "order": 9, "mode": 0,
+      "inputs": [
+        {"name": "vae",     "type": "WANVAE",  "link": 4,  "slot_index": 0},
+        {"name": "samples", "type": "LATENT",  "link": 11, "slot_index": 1}
+      ],
+      "outputs": [{"name": "images", "type": "IMAGE", "links": [12], "slot_index": 0}],
+      "widgets_values": [true, 272, 272, 144, 128]
     },
     {
       "id": 9, "type": "VHS_VideoCombine", "title": "Video Combine",
-      "pos": [1860, 200], "size": {"0": 300, "1": 180}, "order": 9, "mode": 0,
-      "inputs": [{"name": "images", "type": "IMAGE", "link": 9, "slot_index": 0}],
+      "pos": [1880, 200], "size": {"0": 300, "1": 180}, "order": 10, "mode": 0,
+      "inputs": [
+        {"name": "images",      "type": "IMAGE", "link": 12, "slot_index": 0},
+        {"name": "frame_rate",  "type": "INT",   "link": 16, "slot_index": 1}
+      ],
       "outputs": [{"name": "Filepath", "type": "VHS_FILENAMES", "links": [], "slot_index": 0}],
-      "widgets_values": [16, 0, "lensforge", "video/h264-mp4", "yuv420p", 19, true, false, true]
+      "widgets_values": [0, "lensforge", "video/h264-mp4", "yuv420p", 19, true, false, true]
     }
   ],
   "links": [
-    [1,  1,  0, 5,  0, "MODEL"],
-    [2,  1,  0, 7,  0, "MODEL"],
-    [3,  2,  0, 7,  1, "WANVIDEOTEXTEMBEDS"],
-    [4,  4,  0, 7,  2, "WANVIDEOTEXTEMBEDS"],
-    [5,  3,  0, 5,  1, "CAMERA_POSES"],
-    [6,  5,  0, 7,  3, "WANVIDIMAGE_EMBEDS"],
-    [7,  6,  0, 7,  4, "LATENT"],
-    [8,  7,  0, 8,  0, "LATENT"],
-    [9,  8,  0, 9,  0, "IMAGE"],
-    [10, 3,  1, 4,  0, "STRING"],
-    [11, 10, 0, 5,  2, "IMAGE"]
+    [1,  1,  0, 7,  0, "WANVIDEOMODEL"],
+    [2,  2,  0, 5,  1, "WANTEXTENCODER"],
+    [3,  3,  0, 11, 0, "WANVAE"],
+    [4,  3,  0, 8,  0, "WANVAE"],
+    [5,  4,  0, 6,  0, "CAMERACTRL_POSES"],
+    [6,  4,  1, 5,  0, "STRING"],
+    [7,  5,  0, 7,  2, "WANVIDEOTEXTEMBEDS"],
+    [8,  6,  0, 11, 2, "WANVIDIMAGE_EMBEDS"],
+    [9,  10, 0, 11, 1, "IMAGE"],
+    [10, 11, 0, 7,  1, "WANVIDIMAGE_EMBEDS"],
+    [11, 7,  0, 8,  1, "LATENT"],
+    [12, 8,  0, 9,  0, "IMAGE"],
+    [13, 4,  2, 11, 5, "INT"],
+    [14, 4,  4, 6,  1, "INT"],
+    [15, 4,  5, 6,  2, "INT"],
+    [16, 4,  3, 9,  1, "INT"]
   ],
   "groups": [], "config": {},
-  "extra": {"ds": {"scale": 0.6, "offset": [0, 0]}, "frontendVersion": "1.43.18"},
+  "extra": {"ds": {"scale": 0.5, "offset": [0, 0]}, "frontendVersion": "1.44.19"},
   "version": 0.4
 }

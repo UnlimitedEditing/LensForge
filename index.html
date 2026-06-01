@@ -33,13 +33,20 @@
 
     <div class="header-field">
       <label>RES</label>
-      <select id="resolution-val" style="width:110px">
-        <option value="848x480">848 × 480</option>
-        <option value="1280x720">1280 × 720</option>
-        <option value="640x480">640 × 480</option>
-        <option value="480x848">480 × 848</option>
-        <option value="720x1280">720 × 1280</option>
-      </select>
+      <input id="resolution-val" type="text" list="res-presets"
+             value="848x480" style="width:110px" spellcheck="false"
+             placeholder="WxH" />
+      <datalist id="res-presets">
+        <option value="848x480">
+        <option value="1280x720">
+        <option value="640x480">
+        <option value="512x512">
+        <option value="768x768">
+        <option value="480x848">
+        <option value="720x1280">
+        <option value="1024x576">
+        <option value="576x1024">
+      </datalist>
     </div>
 
     <div class="header-field">
